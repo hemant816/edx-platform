@@ -50,6 +50,20 @@
             }),
             LanguagePreferenceFieldView: FieldViews.DropdownFieldView.extend({
                 fieldTemplate: field_dropdown_account_template,
+                finishEditing: function() {
+                    var view = this;
+                    if (_.contains(view.options.betaLangOptions, view.fieldValue())) {
+                        if (window.confirm("You selected a beta language, do you really want to continue?")) {
+                            view._super();
+                        } else {
+                            view.updateValueInField();
+                        }
+                    } else {
+                        view._super();
+                    }
+                    
+                },
+
                 saveSucceeded: function() {
                     var data = {
                         language: this.modelValue(),

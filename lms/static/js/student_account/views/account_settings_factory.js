@@ -168,6 +168,7 @@
                                     {platform_name: platformName}
                                 ),
                                 options: fieldsData.language.options,
+                                betaLangOptions: fieldsData.beta_language.options,
                                 persistChanges: true,
                                 focusNextID: '#u-field-select-country',
                             })
