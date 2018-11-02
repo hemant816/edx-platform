@@ -2,6 +2,7 @@
 Test audit user's access to various content based on content-gating features.
 """
 
+from datetime import date
 import ddt
 from django.conf import settings
 from django.test.client import RequestFactory
@@ -14,14 +15,13 @@ from lms.djangoapps.courseware.module_render import load_single_xblock
 from openedx.core.djangoapps.waffle_utils.testutils import override_waffle_flag
 from openedx.core.lib.url_utils import quote_slashes
 from openedx.features.content_type_gating.partitions import CONTENT_GATING_PARTITION_ID
-from openedx.features.course_duration_limits.config import CONTENT_TYPE_GATING_FLAG
+from openedx.features.content_type_gating.models import ContentTypeGatingConfig
 from student.tests.factories import TEST_PASSWORD, AdminFactory, CourseEnrollmentFactory, UserFactory
 from xmodule.modulestore.tests.django_utils import SharedModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory, ItemFactory
 
 
 @ddt.ddt
-@override_waffle_flag(CONTENT_TYPE_GATING_FLAG, True)
 @override_settings(FIELD_OVERRIDE_PROVIDERS=(
     'openedx.features.content_type_gating.field_override.ContentTypeGatingFieldOverride',
 ))
@@ -169,6 +169,7 @@ class TestProblemTypeAccess(SharedModuleStoreTestCase):
             course_id=self.courses['audit_only']['course'].id,
             mode='audit'
         )
+        ContentTypeGatingConfig.objects.create(enabled=True, enabled_as_of=date(2018, 1, 1))
 
     @classmethod
     def _create_course(cls, run, display_name, modes, component_types):
@@ -233,7 +234,7 @@ class TestProblemTypeAccess(SharedModuleStoreTestCase):
             }
 
     @patch("crum.get_current_request")
-    def _assert_block_is_gated(self, mock_get_current_request, block, is_gated, user_id, course_id):
+    def _assert_block_is_gated(self, mock_get_current_request, block, is_gated, user_id, course):
         """
         Asserts that a block in a specific course is gated for a specific user
 
@@ -250,9 +251,9 @@ class TestProblemTypeAccess(SharedModuleStoreTestCase):
         vertical_xblock = load_single_xblock(
             request=fake_request,
             user_id=user_id,
-            course_id=unicode(course_id),
+            course_id=unicode(course.id),
             usage_key_string=unicode(self.blocks_dict['vertical'].scope_ids.usage_id),
-            course=None
+            course=course
         )
 
         runtime = vertical_xblock.runtime
@@ -283,13 +284,13 @@ class TestProblemTypeAccess(SharedModuleStoreTestCase):
         self._assert_block_is_gated(
             block=self.blocks_dict[prob_type],
             user_id=self.users['audit'].id,
-            course_id=self.course.id,
+            course=self.course,
             is_gated=is_gated
         )
         self._assert_block_is_gated(
             block=self.blocks_dict[prob_type],
             user_id=self.users['verified'].id,
-            course_id=self.course.id,
+            course=self.course,
             is_gated=False
         )
 
@@ -303,7 +304,7 @@ class TestProblemTypeAccess(SharedModuleStoreTestCase):
         self._assert_block_is_gated(
             block=block,
             user_id=self.audit_user.id,
-            course_id=self.course.id,
+            course=self.course,
             is_gated=is_gated
         )
 
@@ -337,7 +338,7 @@ class TestProblemTypeAccess(SharedModuleStoreTestCase):
         self._assert_block_is_gated(
             block=self.courses[course]['blocks'][component_type],
             user_id=self.users[user_track].id,
-            course_id=self.courses[course]['course'].id,
+            course=self.courses[course]['course'],
             is_gated=is_gated,
         )
 

@@ -6,9 +6,7 @@ from django.conf import settings
 
 from lms.djangoapps.courseware.field_overrides import FieldOverrideProvider
 from openedx.features.content_type_gating.partitions import CONTENT_GATING_PARTITION_ID
-from openedx.features.course_duration_limits.config import (
-    CONTENT_TYPE_GATING_FLAG,
-)
+from openedx.features.content_type_gating.models import ContentTypeGatingConfig
 
 
 class ContentTypeGatingFieldOverride(FieldOverrideProvider):
@@ -18,9 +16,6 @@ class ContentTypeGatingFieldOverride(FieldOverrideProvider):
     graded content to only be accessible to the Full Access group
     """
     def get(self, block, name, default):
-        if not CONTENT_TYPE_GATING_FLAG.is_enabled():
-            return default
-
         if name != 'group_access':
             return default
 
@@ -59,6 +54,6 @@ class ContentTypeGatingFieldOverride(FieldOverrideProvider):
         return original_group_access
 
     @classmethod
-    def enabled_for(cls, course):
+    def enabled_for(cls, block):
         """This simple override provider is always enabled"""
-        return True
+        return ContentTypeGatingConfig.enabled_for_course(course_key=block.scope_ids.usage_id.course_key)
