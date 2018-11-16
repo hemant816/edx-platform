@@ -10,11 +10,17 @@ from django.urls import reverse
 from mock import patch
 
 from course_modes.tests.factories import CourseModeFactory
+from experiments.models import ExperimentKeyValue
 from lms.djangoapps.courseware.module_render import load_single_xblock
 from openedx.core.djangoapps.waffle_utils.testutils import override_waffle_flag
 from openedx.core.lib.url_utils import quote_slashes
 from openedx.features.content_type_gating.partitions import CONTENT_GATING_PARTITION_ID
-from openedx.features.course_duration_limits.config import CONTENT_TYPE_GATING_FLAG
+from openedx.features.course_duration_limits.config import (
+    CONTENT_TYPE_GATING_FLAG,
+    EXPERIMENT_DATA_HOLDBACK_KEY,
+    EXPERIMENT_ID,
+)
+from student.models import CourseEnrollment
 from student.tests.factories import TEST_PASSWORD, AdminFactory, CourseEnrollmentFactory, UserFactory
 from xmodule.modulestore.tests.django_utils import SharedModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory, ItemFactory
@@ -368,3 +374,31 @@ class TestProblemTypeAccess(SharedModuleStoreTestCase):
         self.client.login(username=self.users[user].username, password=TEST_PASSWORD)
         response = self.client.post(url)
         self.assertEqual(response.status_code, status_code)
+
+    @ddt.data(
+        (False, True),
+        (True, False),
+    )
+    @ddt.unpack
+    def test_content_gating_holdback(self, put_user_in_holdback, is_gated):
+        """
+        Test that putting a user in the content gating holdback disables content gating.
+        """
+        if put_user_in_holdback:
+            ExperimentKeyValue.objects.create(
+                experiment_id=EXPERIMENT_ID,
+                key="content_type_gating_holdback_percentage",
+                value="100"
+            ).value
+
+        user = UserFactory.create()
+        CourseEnrollment.enroll(user, self.course.id)
+
+        graded, has_score, weight = True, True, 1
+        block = self.graded_score_weight_blocks[(graded, has_score, weight)]
+        self._assert_block_is_gated(
+            block=block,
+            user_id=user.id,
+            course_id=self.course.id,
+            is_gated=is_gated
+        )
