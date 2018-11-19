@@ -199,6 +199,9 @@ class UserPartition(namedtuple("UserPartition", "id name description groups sche
         if not scheme:
             raise TypeError("UserPartition dict {0} has unrecognized scheme {1}".format(value, scheme_id))
 
+        if getattr(scheme, 'read_only', False):
+            raise TypeError("UserPartition dict {0} uses scheme {1} which is read only".format(value, scheme_id))
+
         if hasattr(scheme, "create_user_partition"):
             return scheme.create_user_partition(
                 value["id"],
