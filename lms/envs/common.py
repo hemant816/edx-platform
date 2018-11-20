@@ -1432,11 +1432,6 @@ discussion_js = (
     sorted(rooted_glob(COMMON_ROOT / 'static', 'common/js/discussion/**/*.js'))
 )
 
-if 'common/js/discussion/mathjax_include.js' not in discussion_js:
-    discussion_js += (
-        rooted_glob(COMMON_ROOT / 'static', 'common/js/discussion/mathjax_include.js')
-    )
-
 discussion_vendor_js = [
     'js/Markdown.Converter.js',
     'js/Markdown.Sanitizer.js',
