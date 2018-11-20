@@ -179,7 +179,7 @@ class ChooseModeView(View):
             ),
             "modes": modes,
             "has_credit_upsell": has_credit_upsell,
-            "course_name": course.display_name_with_default_escaped,
+            "course_name": course.display_name_with_default,
             "course_org": course.display_org_with_default,
             "course_num": course.display_number_with_default,
             "chosen_price": chosen_price,
@@ -196,7 +196,7 @@ class ChooseModeView(View):
         )
 
         title_content = _("Congratulations!  You are now enrolled in {course_name}").format(
-            course_name=course.display_name_with_default_escaped
+            course_name=course.display_name_with_default
         )
 
         context["title_content"] = title_content
