@@ -67,6 +67,7 @@ from openedx.core.lib.tests import attr
 from openedx.core.lib.url_utils import quote_slashes
 from openedx.features.course_duration_limits.config import CONTENT_TYPE_GATING_FLAG
 from openedx.features.course_experience import COURSE_OUTLINE_PAGE_FLAG, UNIFIED_COURSE_TAB_FLAG
+from openedx.features.course_experience.tests.views.helpers import add_course_mode
 from openedx.features.enterprise_support.tests.mixins.enterprise import EnterpriseTestConsentRequired
 from student.models import CourseEnrollment
 from student.tests.factories import TEST_PASSWORD, AdminFactory, CourseEnrollmentFactory, UserFactory
@@ -208,8 +209,8 @@ class IndexQueryTestCase(ModuleStoreTestCase):
 
     @override_waffle_flag(CONTENT_TYPE_GATING_FLAG, True)
     @ddt.data(
-        (ModuleStoreEnum.Type.mongo, 10, 162),
-        (ModuleStoreEnum.Type.split, 4, 158),
+        (ModuleStoreEnum.Type.mongo, 10, 149),
+        (ModuleStoreEnum.Type.split, 4, 149),
     )
     @ddt.unpack
     def test_index_query_counts(self, store_type, expected_mongo_query_count, expected_mysql_query_count):
@@ -1434,8 +1435,8 @@ class ProgressPageTests(ProgressPageBaseTests):
 
     @override_waffle_flag(CONTENT_TYPE_GATING_FLAG, True)
     @ddt.data(
-        (True, 40),
-        (False, 39)
+        (True, 38),
+        (False, 37)
     )
     @ddt.unpack
     def test_progress_queries_paced_courses(self, self_paced, query_count):
@@ -1447,8 +1448,8 @@ class ProgressPageTests(ProgressPageBaseTests):
     @override_waffle_flag(CONTENT_TYPE_GATING_FLAG, True)
     @patch.dict(settings.FEATURES, {'ASSUME_ZERO_GRADE_IF_ABSENT_FOR_ALL_TESTS': False})
     @ddt.data(
-        (False, 47, 30),
-        (True, 39, 26)
+        (False, 45, 28),
+        (True, 37, 24)
     )
     @ddt.unpack
     def test_progress_queries(self, enable_waffle, initial, subsequent):
@@ -1665,6 +1666,7 @@ class ProgressPageTests(ProgressPageBaseTests):
         """
         user = UserFactory.create()
         self.assertTrue(self.client.login(username=user.username, password='test'))
+        add_course_mode(self.course, upgrade_deadline_expired=False)        
         CourseEnrollmentFactory(user=user, course_id=self.course.id, mode=course_mode)
 
         response = self._get_progress_page()
@@ -2710,6 +2712,7 @@ class TestIndexViewWithCourseDurationLimits(ModuleStoreTestCase):
         when course_duration_limits are enabled.
         """
         self.assertTrue(self.client.login(username=self.user.username, password='test'))
+        add_course_mode(self.course, upgrade_deadline_expired=False)        
         response = self.client.get(
             reverse(
                 'courseware_section',
@@ -2730,6 +2733,7 @@ class TestIndexViewWithCourseDurationLimits(ModuleStoreTestCase):
         when course_duration_limits are disabled.
         """
         self.assertTrue(self.client.login(username=self.user.username, password='test'))
+        add_course_mode(self.course, upgrade_deadline_expired=False)        
         response = self.client.get(
             reverse(
                 'courseware_section',

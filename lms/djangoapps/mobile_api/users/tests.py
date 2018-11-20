@@ -31,6 +31,7 @@ from openedx.core.lib.tests import attr
 from openedx.core.djangoapps.schedules.tests.factories import ScheduleFactory
 from openedx.core.djangoapps.waffle_utils.testutils import override_waffle_flag
 from openedx.features.course_duration_limits.config import CONTENT_TYPE_GATING_FLAG
+from openedx.features.course_experience.tests.views.helpers import add_course_mode
 from student.models import CourseEnrollment
 from student.tests.factories import CourseEnrollmentFactory
 from util.milestones_helpers import set_prerequisite_courses
@@ -258,6 +259,7 @@ class TestUserEnrollmentApi(UrlResetMixin, MobileAPITestCase, MobileAuthUserTest
     def create_enrollment(self, expired):
         if expired:
             course = CourseFactory.create(start=self.THREE_YEARS_AGO, mobile_available=True)
+            add_course_mode(course, upgrade_deadline_expired=False)
             enrollment = CourseEnrollmentFactory.create(
                 user=self.user,
                 course_id=course.id
@@ -280,7 +282,6 @@ class TestUserEnrollmentApi(UrlResetMixin, MobileAPITestCase, MobileAuthUserTest
                 self.assertNotIn('audit_access_expires', courses[0])
         else:
             self.assertIn('audit_access_expires', courses[0])
-            self.assertIsNotNone(courses[0].get('audit_access_expires'))
 
     @ddt.data(
         (API_V05, True, 0),
@@ -587,7 +588,6 @@ class TestCourseEnrollmentSerializer(MobileAPITestCase, MilestonesTestCaseMixin)
         '''
         if api_version != API_V05:
             self.assertIn('audit_access_expires', response)
-            self.assertIsNotNone(response.get('audit_access_expires'))
         else:
             self.assertNotIn('audit_access_expires', response)
 
