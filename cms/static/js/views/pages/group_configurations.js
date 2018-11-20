@@ -25,7 +25,7 @@ function($, _, gettext, BasePage, GroupConfigurationsListView, PartitionGroupLis
                 this.allGroupViewList.push(
                     new PartitionGroupListView({
                         collection: this.allGroupConfigurations[i].get('groups'),
-                        restrictEditing: this.allGroupConfigurations[i].get('readOnly'),
+                        restrictEditing: this.allGroupConfigurations[i].get('read_only'),
                         scheme: currentScheme
                     })
                 );

@@ -24,7 +24,7 @@ function(Backbone, _, gettext, GroupModel, GroupCollection) {
                 showGroups: false,
                 editing: false,
                 usage: [],
-                readOnly: false
+                read_only: false
             };
         },
 
@@ -39,7 +39,6 @@ function(Backbone, _, gettext, GroupModel, GroupCollection) {
             this.on('remove:groups', this.groupRemoved);
 
             this.canBeEmpty = options && options.canBeEmpty;
-            this.set({readOnly: attributes.read_only});
             this.setOriginalAttributes();
 
             return this;
