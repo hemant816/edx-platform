@@ -39,6 +39,12 @@ class NoSuchUserPartitionGroupError(UserPartitionError):
     """
     pass
 
+class ReadOnlyUserPartitionError(UserPartitionError):
+    """
+    Exception to be raised when attempting to modify a read only partition.
+    """
+    pass
+
 
 class Group(namedtuple("Group", "id name")):
     """
@@ -200,7 +206,7 @@ class UserPartition(namedtuple("UserPartition", "id name description groups sche
             raise TypeError("UserPartition dict {0} has unrecognized scheme {1}".format(value, scheme_id))
 
         if getattr(scheme, 'read_only', False):
-            raise TypeError("UserPartition dict {0} uses scheme {1} which is read only".format(value, scheme_id))
+            raise ReadOnlyUserPartitionError("UserPartition dict {0} uses scheme {1} which is read only".format(value, scheme_id))
 
         if hasattr(scheme, "create_user_partition"):
             return scheme.create_user_partition(
