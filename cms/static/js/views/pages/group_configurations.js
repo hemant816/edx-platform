@@ -25,7 +25,7 @@ function($, _, gettext, BasePage, GroupConfigurationsListView, PartitionGroupLis
                 this.allGroupViewList.push(
                     new PartitionGroupListView({
                         collection: this.allGroupConfigurations[i].get('groups'),
-                        restrictEditing: currentScheme === 'enrollment_track' || currentScheme === 'content_type_gate',
+                        restrictEditing: this.allGroupConfigurations[i].get('readOnly'),
                         scheme: currentScheme
                     })
                 );
