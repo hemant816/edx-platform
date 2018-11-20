@@ -107,7 +107,7 @@ class GroupConfiguration(object):
         """
         try:
             return UserPartition.from_json(self.configuration)
-        except ReadOnlyUserPartitionError as err:
+        except ReadOnlyUserPartitionError:
             raise GroupConfigurationsValidationError(_("unable to load this type of group configuration"))
 
     @staticmethod

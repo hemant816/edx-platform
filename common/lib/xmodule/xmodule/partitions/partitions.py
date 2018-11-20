@@ -39,6 +39,7 @@ class NoSuchUserPartitionGroupError(UserPartitionError):
     """
     pass
 
+
 class ReadOnlyUserPartitionError(UserPartitionError):
     """
     Exception to be raised when attempting to modify a read only partition.
